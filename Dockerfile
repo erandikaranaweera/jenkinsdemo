@@ -1,19 +1,12 @@
-FROM node:8
+FROM mcr.microsoft.com/windows/servercore:1803 as installer
 
-# Create app directory
-WORKDIR /usr/src/app
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop';$ProgressPreference='silentlyContinue';"]
 
-# Install app dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
-# where available (npm@5+)
-COPY package*.json ./
+RUN Invoke-WebRequest -OutFile nodejs.zip -UseBasicParsing "https://nodejs.org/dist/v12.4.0/node-v12.4.0-win-x64.zip"; Expand-Archive nodejs.zip -DestinationPath C:\; Rename-Item "C:\\node-v12.4.0-win-x64" c:\nodejs
 
-RUN npm install
-# If you are building your code for production
-# RUN npm install --only=production
+FROM mcr.microsoft.com/windows/nanoserver:1803
 
-# Bundle app source
-COPY . .
-
-EXPOSE 8080
-CMD [ "npm", "start" ]
+WORKDIR C:/nodejs
+COPY --from=installer C:/nodejs/ .
+RUN SETX PATH C:\nodejs
+RUN npm config set registry https://registry.npmjs.org/
