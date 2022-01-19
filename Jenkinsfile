@@ -1,21 +1,12 @@
-pipeline {
-    agent any
+node {
 
-    stages {
-        stage('Hello') {
-            steps {
-                echo 'Hello World'
-            }
-        }
-        stage('Build') {
-            steps {
-                echo 'Build World'
-            }
-        }
-        stage('deploy') {
-            steps {
-                echo 'test World'
-            }
-        }
+    checkout scm
+
+    docker.withRegistry('https://registry.hub.docker.com', 'dockerHub') {
+
+        def customImage = docker.build("erandiranaweera/dockerwebapp")
+
+        /* Push the container to the custom Registry */
+        customImage.push()
     }
 }
